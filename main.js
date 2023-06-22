@@ -10,12 +10,13 @@ const {twitterCallback} = require('./twitter/auth/index')
 app.use(bodyparser.json())
 
 
-app.get("/callback", async function (req, res) {
-  res.send("ok")
+app.get("/twitter/callback", async function (req, res) {
+  
   let state = req.query.state
   let code = req.query.code
   // exchanging code for tokens
   await twitterCallback(code, state)
+  res.send("ok")
 })
 
 app.listen(port, () => {

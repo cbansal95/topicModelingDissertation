@@ -8,7 +8,7 @@ async function twitterCallback(code, state) {
     grant_type: "authorization_code",
     client_id: process.env.TWITTER_CLIENT_ID,
     redirect_uri: process.env.TWITTER_CALLBACK_URL,
-    code_verifier: state,
+    code_verifier: "challenge",
   })
   let config = {
     method: "post",
