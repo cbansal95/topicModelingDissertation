@@ -1,0 +1,16 @@
+{
+  "name": "chirag-dissertation",
+  "version": "1.0.0",
+  "description": "API and OAuth resources for dissertation",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Chirag Bansal",
+  "license": "ISC",
+  "dependencies": {
+    "axios": "^1.4.0",
+    "dotenv": "^16.3.1",
+    "qs": "^6.11.2"
+  }
+}
