@@ -45,18 +45,24 @@ app.get("/sync", async function (req, res) {
   const db = await openDb()
   const row = await getAccessToken(db)
   let token = row[0].access_token
-  console.log(token)
-  const postsData = await getSubredditPosts("news", token)
-  const posts = postsData.data.children
-  posts.forEach(async (post) => {
-    let postRow = {
-      id: post.data.name,
-      title: post.data.title,
-      created: post.data.created_utc * 10,
-      selftext: post.data.selftext,
-    }
-    await insertPostToDB(db, postRow)
-  })
+  let cursor = ''
+  let subreddit = ''
+  for (let i=0; i< 10; i++) {
+    const postsData = await getSubredditPosts(subreddit, token, cursor)
+    const posts = postsData.data.children
+    cursor = postsData.data.after
+    let postReqs = []
+    posts.forEach(async (post) => {
+      let postRow = {
+        id: post.data.name,
+        title: post.data.title,
+        created: post.data.created_utc * 10,
+        selftext: post.data.selftext,
+      }
+      postReqs.push(insertPostToDB(db, postRow, subreddit))
+    })
+    await Promise.all(postReqs)
+  }
   // get
   await closeConnection(db)
 })

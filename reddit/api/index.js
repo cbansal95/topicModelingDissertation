@@ -1,5 +1,5 @@
 const axios = require("axios")
-async function getSubredditPosts(subreddit="news", token) {
+async function getSubredditPosts(subreddit="news", token, cursor="") {
   return new Promise((resolve, reject) => {
     let config = {
       method: "get",
@@ -8,7 +8,10 @@ async function getSubredditPosts(subreddit="news", token) {
         Authorization: `Bearer ${token}`,
       },
     }
-
+    if (cursor) {
+      config.params = {}
+      config.params.after=cursor
+    }
     axios
       .request(config)
       .then((response) => {

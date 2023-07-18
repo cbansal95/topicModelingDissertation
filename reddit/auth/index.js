@@ -31,7 +31,7 @@ async function redditCallback(code, state) {
       await closeConnection(db)
     })
     .catch((error) => {
-      console.log(error)
+      console.log(error.response.data)
       //console.log(error.response.data || error)
     })
 }
