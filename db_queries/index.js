@@ -56,8 +56,8 @@ async function getAccessToken(db) {
 }
 async function insertPostToDB(db, post, subreddit) {
   return new Promise((resolve, reject) => {
-    let data = [post.id, subreddit, post.title, post.created, post.selftext]
-    let sql = `INSERT INTO reddit_post (post_id, subreddit, title, created, selftext) VALUES (?,?,?,?,?)`
+    let data = [post.id, post.subreddit, post.title, post.created, post.selftext]
+    let sql = `INSERT OR REPLACE INTO reddit_post (post_id, subreddit, title, created, selftext) VALUES (?,?,?,?,?)`
     db.all(sql, data, (error, rows) => {
       if (error) {
         reject(error)

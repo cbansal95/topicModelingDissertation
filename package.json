@@ -4,6 +4,7 @@
   "description": "API and OAuth resources for dissertation",
   "main": "main.js",
   "scripts": {
+    "start": "node retrieval",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Chirag Bansal",

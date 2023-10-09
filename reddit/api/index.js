@@ -8,6 +8,10 @@ async function getSubredditPosts(subreddit="news", token, cursor="") {
         Authorization: `Bearer ${token}`,
       },
     }
+    if (subreddit == "top")
+    {
+      config.url = "https://oauth.reddit.com/top?limit=100"
+    }
     if (cursor) {
       config.params = {}
       config.params.after=cursor

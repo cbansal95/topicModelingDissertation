@@ -9,7 +9,6 @@ const path = require("path")
 const { twitterCallback } = require("./twitter/auth/index")
 const { redditCallback } = require("./reddit/auth/index")
 const { getSubredditPosts } = require("./reddit/api/index")
-const init = require("./init/index")
 const sqlite3 = require("sqlite3")
 // import { HuggingFace } from "@huggingface/inference"
 var inference = require("@huggingface/inference")
@@ -46,21 +45,31 @@ app.get("/sync", async function (req, res) {
   const row = await getAccessToken(db)
   let token = row[0].access_token
   let cursor = ''
-  let subreddit = ''
+  let subreddit = req.query.subreddit
   for (let i=0; i< 10; i++) {
     const postsData = await getSubredditPosts(subreddit, token, cursor)
     const posts = postsData.data.children
     cursor = postsData.data.after
+    console.log(cursor)
     if (cursor){
       let postReqs = []
       posts.forEach(async (post) => {
+        
         let postRow = {
           id: post.data.name,
-          title: post.data.title,
+          title: preprocess(post.data.title),
           created: post.data.created_utc * 10,
-          selftext: post.data.selftext,
+          selftext: preprocess(post.data.selftext),
+          subreddit: post.data.subreddit_name_prefixed
         }
-        postReqs.push(insertPostToDB(db, postRow, subreddit))
+        if (post.media || post.is_video || post.preview) {
+          postRow.is_media = true
+        }
+        if ((postRow.title.length + postRow.selftext.length) > 50) 
+        {
+          postReqs.push(insertPostToDB(db, postRow, subreddit))
+        }
+        
       })
       await Promise.all(postReqs)
     } else {
@@ -69,6 +78,7 @@ app.get("/sync", async function (req, res) {
 
   }
   console.log("Finished pulling reddit posts")
+  res.sendStatus(200)
   // get
   await closeConnection(db)
 })
@@ -150,3 +160,14 @@ app.get("/summarize_post", async function (req,res) {
 app.listen(port, async () => {
   // Code.....
 })
+
+function preprocess(inputString) {
+  inputString = inputString.replace(/[^ -~]+/gm, " ");
+  inputString = inputString.replace(/(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?\/[a-zA-Z0-9]{2,}|((https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z]{2,}(\.[a-zA-Z]{2,})(\.[a-zA-Z]{2,})?)|(https:\/\/www\.|http:\/\/www\.|https:\/\/|http:\/\/)?[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}\.[a-zA-Z0-9]{2,}(\.[a-zA-Z0-9]{2,})?/gm," ")
+  inputString = inputString.replace(/\/n/gm," ")
+  inputString = inputString.replace(/[\w-_]+@[\w-_]+.[\w-_]+/gm," ")
+  inputString = inputString.replace(/[r|u]\/[\w/]+/gm," ")
+  inputString = inputString.replace(/[*|[|\]|\\\/]+/gm," ")
+  inputString = inputString.replace(/[\s]+/gm," ")
+  return inputString
+}
